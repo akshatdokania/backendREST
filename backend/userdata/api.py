@@ -17,7 +17,8 @@ class UserInput(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(status= 204)
+            epicount, labcount, vitalcount, count, message = checkparams(serializer.data)
+            return Response({"epicount": epicount,"labcount": labcount, "vitalcount": vitalcount,"count": count, "message": message}, 204)
         return Response(serializer.errors, 400)
 
 class UserDetail(APIView):
@@ -38,5 +39,69 @@ class UserDetail(APIView):
         serializer = UserSerializer(model, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(status= 204)
+            epicount, labcount, vitalcount, count, message = checkparams(serializer.data)
+            return Response({"epicount": epicount,"labcount": labcount, "vitalcount": vitalcount,"count": count, "message": message}, 204)
         return Response(serializer.errors, 400)
+
+
+    def checkparams(params):
+    total = 0
+    total_param = 21
+    count_epi = 0
+    count_vital = 0
+    count_lab = 0
+    riskMessage = "Risk returned null"
+    if int(params['age']) > 55:
+        counter += 1
+    if 'hpd' in params:
+        count_epi += 1
+    if 'ckd' in params:
+        count_epi += 1
+    if 'dm' in params:
+        count_epi += 1
+    if 'htn' in params:
+        count_epi += 1
+    if 'hiv' in params:
+        count_epi += 1
+    if 'trans' in params:
+        count_epi +=  1
+    if int(params['resrate']) > 24:
+        count_vital += 1
+    if int(params['heartrate']) > 125:
+        count_vital += 1
+    if int(params['spo']) < 90:
+        count_vital += 1
+    if int(params['ddimer']) != None and int(params['ddimer']) > 1000:
+        count_lab += 1
+    if int(params['cpk']) != None and int(params['cpk']) > 400:
+        count_lab += 1
+    if int(params['crp']) != None and int(params['crp']) > 100:
+        count_lab += 1
+    if int(params['ldh']) != None and int(params['ldh']) > 245:
+        count_lab += 1
+    if float(params['tropo']) != None and float(params['tropo']) > 0.1:
+        count_lab += 1
+    if int(params['ferr']) != None and int(params['ferr']) > 500:
+        count_lab += 1
+    if float(params['absolute']) != None and float(params['absolute']) < 0.8:
+        count_lab += 1
+    total = count_epi+count_lab+count_vital
+    risk = (total/total_param) * 10
+    risk = round(risk, 2)
+    total_vl = count_lab+count_vital
+    if(count_epi>0 and count_vital>0 and count_lab>0):
+        riskMessage = "High Risk"
+        return count_epi,count_lab,count_vital,risk,riskMessage
+    elif(tot_vl == 2 and count_lab != 0 and count_vital != 0):
+        riskMessage = "Moderate Risk"
+        return count_epi,count_lab,count_vital,risk,riskMessage
+    elif(tot_vl >= 2):
+        riskMessage = "High Risk"
+        return count_epi,count_lab,count_vital,risk,riskMessage
+    elif(count_epidem > 0 and (count_lab == 1 or count_vital == 1)):
+        riskMessage = "Moderate Risk"
+        return count_epi,count_lab,count_vital,risk,riskMessage
+    elif(total < 2 or (count_epidem > 0 and count_lab == 0 and count_vital == 0)):
+        riskMessage = "Low Risk"
+        return count_epi,count_lab,count_vital,risk,riskMessage
+    return count_epi,count_lab,count_vital,risk,riskMessage
