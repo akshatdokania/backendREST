@@ -25,24 +25,22 @@ class UserSerializer(serializers.ModelSerializer):                              
         fields = ('id', 'username', 'email', 'password')
 
 class LoginSerializer(serializers.ModelSerializer): #serializer for login checks
-    email = serializers.EmailField()
     username = serializers.CharField()
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password')
+        fields = ('username', 'password')
         extra_kwargs = {
         "password" : {"write_only": True}
         }
 
     def validate(self, data):
         username = data.get('username', None)
-        email = data.get('email', None)
         password = data.get('password')
-        if not username or not email:
+        if not username:
             raise ValidationError('Username and Email should be provided')
         user = User.objects.filter(
-        Q(username=username) | Q(email=email)
+        Q(username=username)
         ).distinct()
         if user.exists() and user.count() == 1:
             user_obj = user.first()

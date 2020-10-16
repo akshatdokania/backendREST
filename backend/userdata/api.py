@@ -22,6 +22,7 @@ class UserInput(APIView):
         return Response(serializer.errors, 400)
 
 class UserDetail(APIView):
+    serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request, id):
         try:
