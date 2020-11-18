@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import django_heroku
+import dj_database_url
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,12 +23,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'oyz=3^w*o$x%%@4!m%!iykb@@okh^i4x3jl*a(bw&3khya3!**'
+# SECRET_KEY = 'oyz=3^w*o$x%%@4!m%!iykb@@okh^i4x3jl*a(bw&3khya3!**'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'oyz=3^w*o$x%%@4!m%!iykb@@okh^i4x3jl*a(bw&3khya3!**')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['akshatrest.herokuapp.com', '127.0.0.1']
 CORS_ORIGIN_ALLOW_ALL = True
 
 
@@ -88,6 +93,8 @@ DATABASES = {
     }
 }
 
+db_from_env = dj_database_url.config(conn_max_age=600)
+DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -136,3 +143,5 @@ REST_FRAMEWORK = {
     'rest_framework.authentication.SessionAuthentication',
     ]
 }
+
+django_heroku.settings(locals())

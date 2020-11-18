@@ -7,10 +7,10 @@ from .models import Userdata
 from django.views.decorators.csrf import csrf_exempt
 
 class UserInput(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     serializer_class = UserSerializer
     def get(self, request):
-        id = request.data.get('id')
+        id = request.data.get('hospitalid')
         try:
             form = Userdata.objects.get(hospitalid = id)
             return Response('User Exists', 400)
@@ -29,7 +29,7 @@ class UserInput(APIView):
 
 class UserDetail(APIView):
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     def get(self, request, id):
         try:
             model= Userdata.objects.get(hospitalid = id)
@@ -59,62 +59,72 @@ class UserTrial(APIView):
 
 def checkparams(params):
         total = 0
-        total_param = 0
+        total_param = 1
         count_epi = 0
         count_vital = 0
         count_lab = 0
         riskMessage = "Risk returned null"
         if int(params['age']) > 55:
             counter += 1
-            total_param += 1
-        if 'H/O DM/(HbA1c>7.6)' in params['drpdownValue']:
-            count_epi += 1
-            total_param += 1
-        if 'H/O PULMONARY DISEASE' in params['drpdownValue']:
-            count_epi += 1
-            total_param += 1
-        if 'H/O CKD' in params['drpdownValue']:
-            count_epi += 1
-            total_param += 1
-        if 'H/O HCN' in params['drpdownValue']:
-            count_epi += 1
-            total_param += 1
-        if 'H/O DM/(HbA1c>7.6)' in params['drpdownValue']:
-            count_epi += 1
-            total_param += 1
-        if 'IMMUNOSUPRESSION' in params['drpdownValue']:
-            count_epi +=  1
-            total_param += 1
-        if int(params['resrate']) > 24:
-            count_vital += 1
-            total_param += 1
-        if int(params['heartrate']) > 125:
-            count_vital += 1
-            total_param += 1
-        if int(params['spo']) < 90:
-            count_vital += 1
-            total_param += 1
-        if int(params['ddimer']) != None and int(params['ddimer']) > 1000:
-            count_lab += 1
-            total_param += 1
-        if int(params['cpk']) != None and int(params['cpk']) > 400:
-            count_lab += 1
-            total_param += 1
-        if int(params['crp']) != None and int(params['crp']) > 100:
-            count_lab += 1
-            total_param += 1
-        if int(params['ldh']) != None and int(params['ldh']) > 245:
-            count_lab += 1
-            total_param += 1
-        if float(params['tropo']) != None and float(params['tropo']) > 0.1:
-            count_lab += 1
-            total_param += 1
-        if int(params['ferr']) != None and int(params['ferr']) > 500:
-            count_lab += 1
-            total_param += 1
-        if float(params['absolute']) != None and float(params['absolute']) < 0.8:
-            count_lab += 1
-            total_param += 1
+        if 'drpdownValue' in params:
+            if 'H/O DM/(HbA1c>7.6)' in params['drpdownValue']:
+                count_epi += 1
+                total_param += 1
+            if 'H/O PULMONARY DISEASE' in params['drpdownValue']:
+                count_epi += 1
+                total_param += 1
+            if 'H/O CKD' in params['drpdownValue']:
+                count_epi += 1
+                total_param += 1
+            if 'H/O HCN' in params['drpdownValue']:
+                count_epi += 1
+                total_param += 1
+            if 'H/O DM/(HbA1c>7.6)' in params['drpdownValue']:
+                count_epi += 1
+                total_param += 1
+            if 'IMMUNOSUPRESSION' in params['drpdownValue']:
+                count_epi +=  1
+                total_param += 1
+        if 'resrate' in params:
+            if int(params['resrate']) > 24:
+                count_vital += 1
+                total_param += 1
+        if 'heartrate' in params:
+            if int(params['heartrate']) > 125:
+                count_vital += 1
+                total_param += 1
+        if 'spo' in params:
+            if int(params['spo']) < 90:
+                count_vital += 1
+                total_param += 1
+        if 'ddimer' in params:
+            if int(params['ddimer']) > 1000:
+                count_lab += 1
+                total_param += 1
+        if 'cpk' in params:
+            if int(params['cpk']) > 400:
+                count_lab += 1
+                total_param += 1
+        if 'crp' in params:
+            if int(params['crp']) > 100:
+                count_lab += 1
+                total_param += 1
+        if 'ldh' in params:
+            if int(params['ldh']) > 245:
+                count_lab += 1
+                total_param += 1
+        if 'tropo' in params:
+            if float(params['tropo']) > 0.1:
+                count_lab += 1
+                total_param += 1
+        if 'ferr' in params:
+            if int(params['ferr']) > 500:
+                count_lab += 1
+                total_param += 1
+        if 'absolute' in params:
+            if float(params['absolute']) < 0.8:
+                count_lab += 1
+                total_param += 1
         total = count_epi+count_lab+count_vital
         risk = (total/total_param) * 10
         risk = round(risk, 2)
